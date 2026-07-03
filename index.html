@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>衣服追蹤器</title>
+  <!-- 網頁快捷 App -->
+<link rel="icon" type="image/png" href="./logo_tracker.png">
+<link rel="apple-touch-icon" href="./logo_tracker.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./logo_tracker.png">
+<!-- 網頁快捷 App -->
+<style>
+  :root {
+    --blue-50: #f0f7ff;
+    --blue-100: #e1efff;
+    --blue-200: #c7e0ff;
+    --blue-300: #9ac8ff;
+    --blue-500: #3b8bff;
+    --blue-600: #2f74e0;
+    --blue-700: #245bb3;
+    --green-500: #35b56a;
+    --green-600: #2a9c5a;
+    --green-bg: #eafaf0;
+    --ink: #1f2733;
+    --ink-soft: #5b6675;
+    --ink-faint: #92a0b3;
+    --line: #e6edf5;
+    --white: #ffffff;
+    --danger: #e5654b;
+    --shadow: 0 1px 2px rgba(24, 54, 92, .04), 0 6px 20px rgba(24, 54, 92, .06);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(180deg, var(--blue-50) 0%, #fafcff 220px, #fafcff 100%);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
+                 "Microsoft JhengHei", "Noto Sans TC", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px 18px 120px;
+  }
+
+  /* Header */
+  header.app-head {
+    text-align: center;
+    margin-bottom: 22px;
+  }
+  .add-open-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 12px;
+    background: transparent;
+    color: var(--blue-600);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 6px 8px;
+    border-radius: 8px;
+  }
+  .add-open-btn:hover { background: var(--blue-50); }
+  .add-open-btn .plus { font-size: 17px; line-height: 1; font-weight: 700; }
+  header.app-head h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: .3px;
+  }
+  header.app-head p {
+    margin: 6px 0 0;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+
+  /* Cards / panels */
+  .panel {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 14px;
+  }
+  .section-title .count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--blue-600);
+    background: var(--blue-100);
+    border-radius: 999px;
+    padding: 2px 9px;
+  }
+
+  .subhead {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    margin: 16px 0 8px;
+    padding-left: 2px;
+  }
+  .subhead:first-child { margin-top: 0; }
+
+  /* Add form */
+  .add-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+  }
+  .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  select, input[type="text"], input[type="number"] {
+    font: inherit;
+    color: var(--ink);
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+    width: 100%;
+  }
+  select:focus, input:focus {
+    border-color: var(--blue-300);
+    box-shadow: 0 0 0 3px var(--blue-100);
+  }
+  .field.qty { max-width: 96px; }
+
+  /* Buttons */
+  button {
+    font: inherit;
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    transition: background .15s, border-color .15s, color .15s, transform .05s;
+  }
+  button:active { transform: translateY(1px); }
+
+  .btn-primary {
+    background: var(--blue-500);
+    color: #fff;
+    font-weight: 600;
+    padding: 10px 18px;
+    white-space: nowrap;
+  }
+  .btn-primary:hover { background: var(--blue-600); }
+
+  .btn-green {
+    background: var(--green-500);
+    color: #fff;
+    font-weight: 700;
+    padding: 14px 22px;
+    font-size: 16px;
+    width: 100%;
+    box-shadow: 0 6px 18px rgba(53, 181, 106, .28);
+  }
+  .btn-green:hover { background: var(--green-600); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--blue-600);
+    font-weight: 600;
+    border: none;
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+  .btn-ghost:hover { text-decoration: underline; }
+  .btn-ghost.active {
+    background: transparent;
+    color: var(--ink);
+  }
+
+  .btn-cancel {
+    background: #fff;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    font-weight: 600;
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  .btn-cancel:hover { background: #f5f8fc; }
+
+  .btn-x {
+    background: transparent;
+    color: var(--ink-faint);
+    font-size: 16px;
+    line-height: 1;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+  }
+  .btn-x:hover { background: #fdece8; color: var(--danger); }
+
+  /* Item cards */
+  .items { display: flex; flex-direction: column; gap: 8px; }
+
+  .item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 9px 10px 9px 14px;
+  }
+  .item .name {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .item .name-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .item .name-tail {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .item .cat-tag {
+    color: var(--ink-faint);
+    font-weight: 500;
+    margin-right: 4px;
+  }
+  .item.planned {
+    border-color: transparent;
+    background: #eef1f5;
+    box-shadow: none;
+  }
+  .item.plan-card {
+    border-color: transparent;
+    background: #eef1f5;
+  }
+
+  select.status {
+    padding: 7px 9px;
+    border-radius: 9px;
+    font-size: 13px;
+    background: var(--blue-50);
+    border-color: var(--blue-100);
+    max-width: 150px;
+  }
+
+  .status-tag {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    background: #eef1f5;
+    border-radius: 8px;
+    padding: 4px 10px;
+    white-space: nowrap;
+  }
+  .qty-badge {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--blue-700);
+    background: var(--blue-100);
+    border-radius: 8px;
+    padding: 2px 8px;
+  }
+
+  .empty {
+    color: var(--ink-faint);
+    font-size: 13px;
+    padding: 6px 2px;
+    font-style: normal;
+  }
+
+  /* 總覽區塊（正在穿 / 明天穿）— 與衣物清單做視覺區隔 */
+  .panel.overview {
+    border-radius: 18px;
+    border-style: dashed;
+    border-width: 1.5px;
+  }
+  .overview--wearing {
+    background: var(--blue-50);
+    border-color: var(--blue-200);
+  }
+  .overview--wearing .section-title { color: var(--blue-700); }
+  .overview--plan {
+    background: #f4f6f8;
+    border-color: #d4dae2;
+  }
+  .overview--plan .section-title { color: var(--ink-soft); }
+  .count--muted {
+    color: var(--ink-soft);
+    background: #e5e9ee;
+  }
+  .btn-wear {
+    margin-top: 14px;
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid #c3ccd6;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 7px 15px;
+    border-radius: 9px;
+  }
+  .btn-wear:hover { background: #eef1f5; border-color: #aab6c3; }
+  /* 總覽內的卡片維持白底，讓它們從淡色底板中浮出 */
+  .overview .item {
+    background: #fff;
+    border-color: transparent;
+    box-shadow: 0 1px 3px rgba(24, 54, 92, .07);
+  }
+
+  /* 手機右滑刪除 */
+  .swipe-wrap {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+  .swipe-wrap .item {
+    position: relative;
+    z-index: 1;
+    touch-action: pan-y;
+    will-change: transform;
+  }
+  .swipe-bg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-left: 18px;
+    background: var(--danger);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 12px;
+  }
+  .swipe-bg::before { content: '🗑'; font-size: 15px; }
+  .swipe-wrap.armed .swipe-bg { background: #cf4630; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(24, 54, 92, .28);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: auto; }
+  .modal {
+    background: var(--white);
+    border-radius: 18px;
+    box-shadow: 0 20px 60px rgba(24, 54, 92, .22);
+    width: 100%;
+    max-width: 420px;
+    padding: 22px;
+    transform: translateY(8px) scale(.98);
+    transition: transform .18s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+  .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .modal-head h2 { margin: 0; font-size: 17px; font-weight: 700; }
+  .modal-body { display: flex; flex-direction: column; gap: 14px; }
+  .modal-body .field.qty { max-width: none; }
+  .modal-actions { margin-top: 6px; }
+  .modal-actions .btn-primary { width: 100%; padding: 12px; }
+
+  @media (max-width: 520px) {
+    .add-grid { grid-template-columns: 1fr 1fr; }
+    .add-grid .field.qty { grid-column: 1; }
+    .add-grid .add-btn-wrap { grid-column: 2; }
+    .add-btn-wrap .btn-primary { width: 100%; }
+    select.status { max-width: 120px; }
+    .item .name { font-size: 13px; }
+    /* 手機改用右滑刪除，隱藏 ✕ 按鈕 */
+    body.touch #listsPanel .btn-x { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="app-head">
+    <h1>🧳 旅行衣物追蹤器</h1>
+    <p>每天管理衣服狀態，告別臭臭衣</p>
+    <button class="add-open-btn" id="openAddBtn"><span class="plus">＋</span>新增衣物</button>
+  </header>
+
+  <!-- 2. 正在穿 -->
+  <div class="panel overview overview--wearing">
+    <h2 class="section-title">正在穿 <span class="count" id="wearingCount"></span></h2>
+    <div class="items" id="wearingList"></div>
+  </div>
+
+  <!-- 3. 明天穿 -->
+  <div class="panel overview overview--plan">
+    <h2 class="section-title">明天穿 <span class="count count--muted" id="planCount"></span></h2>
+    <div class="items" id="planList"></div>
+    <button class="btn-wear" id="wearTodayBtn">今天穿上</button>
+  </div>
+
+  <!-- 4. 各分類清單 -->
+  <div class="panel" id="listsPanel"></div>
+
+</div>
+
+<!-- 新增衣物彈窗 -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="addModalTitle">
+    <div class="modal-head">
+      <h2 id="addModalTitle">➕ 新增衣物</h2>
+      <button class="btn-x" id="closeAddBtn" title="關閉">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label for="addCat">分類</label>
+        <select id="addCat"></select>
+      </div>
+      <div class="field" id="nameField">
+        <label for="addName">名稱</label>
+        <input type="text" id="addName" placeholder="例如：白T" autocomplete="off">
+      </div>
+      <div class="field qty">
+        <label for="addQty">數量</label>
+        <input type="number" id="addQty" value="1" min="1" step="1">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" id="addBtn">新增</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- Storage: 優先 window.storage → localStorage → 記憶體 ----------
+   在沙盒 / file:// / 隱私模式下 localStorage 可能拋錯（opaque origin），
+   因此每一層都包 try/catch，最後退回記憶體，確保新增等操作不會中斷。 */
+const memStore = {};
+const store = {
+  get(key, dflt) {
+    try {
+      if (window.storage && typeof window.storage.get === 'function') {
+        const v = window.storage.get(key, false);
+        return (v === undefined || v === null) ? dflt : v;
+      }
+    } catch (e) {}
+    try {
+      const raw = window.localStorage.getItem(key);
+      if (raw !== null) return raw;
+    } catch (e) {}
+    return (key in memStore) ? memStore[key] : dflt;
+  },
+  set(key, value) {
+    memStore[key] = value;               // 一律寫入記憶體，作為保底
+    try {
+      if (window.storage && typeof window.storage.set === 'function') {
+        window.storage.set(key, value, false);
+        return;
+      }
+    } catch (e) {}
+    try { window.localStorage.setItem(key, value); } catch (e) {}
+  }
+};
+
+/* ---------- 分類定義 ---------- */
+const NAMED_CATS = ['上衣', '下身', '洋裝', '睡衣', '外套'];
+const QTY_CATS   = ['胸罩', '內褲', '安全褲', '襪子'];
+const ALL_CATS   = [...NAMED_CATS, ...QTY_CATS];
+
+// 內衣褲：件數多、可同時處於多種狀態，改狀態時「一次只移動一件」（而非整批切換）
+const PER_PIECE_CATS = ['胸罩', '內褲', '安全褲'];
+
+const STATUSES = [
+  { key: 'wearing',  label: '🧍 正在穿' },
+  { key: 'clean',    label: '✅ 乾淨' },
+  { key: 'reusable', label: '🔄 可再穿一次' },
+  { key: 'dirty',    label: '🧺 待洗' },
+];
+
+/* 分類清單顯示順序與 emoji（含內衣褲群組） */
+const CAT_ICON = {
+  '上衣': '👚', '下身': '👖', '洋裝': '👗', '睡衣': '🌙', '外套': '🧥',
+  '胸罩': '🩲', '內褲': '🩲', '安全褲': '🩲', '襪子': '🧦'
+};
+
+/* ---------- 狀態資料 ---------- */
+let named = [];   // [{id, cat, name, status, planned}]
+let qty   = {};   // { '胸罩': {wearing, clean, reusable, dirty, plan}, ... }
+
+function loadData() {
+  try { named = JSON.parse(store.get('clothes-named', '[]')) || []; }
+  catch (e) { named = []; }
+
+  let q;
+  try { q = JSON.parse(store.get('clothes-qty', '{}')) || {}; }
+  catch (e) { q = {}; }
+  qty = {};
+  QTY_CATS.forEach(c => {
+    const s = q[c] || {};
+    // plan 依「來源狀態」分開記錄；相容舊格式（plan 為單一數字 → 視為乾淨來源）
+    let plan = { clean: 0, reusable: 0 };
+    if (typeof s.plan === 'number') {
+      plan.clean = s.plan;
+    } else if (s.plan && typeof s.plan === 'object') {
+      plan.clean = s.plan.clean || 0;
+      plan.reusable = s.plan.reusable || 0;
+    }
+    qty[c] = {
+      wearing:  s.wearing  || 0,
+      clean:    s.clean    || 0,
+      reusable: s.reusable || 0,
+      dirty:    s.dirty    || 0,
+      plan:     plan,
+    };
+  });
+}
+
+/* 明天穿只會從 clean / reusable 撥出，這裡列出可作為 plan 來源的狀態 */
+const PLAN_SOURCES = ['clean', 'reusable'];
+function planTotal(cat) {
+  return PLAN_SOURCES.reduce((n, s) => n + (qty[cat].plan[s] || 0), 0);
+}
+
+function saveNamed() { store.set('clothes-named', JSON.stringify(named)); }
+function saveQty()   { store.set('clothes-qty', JSON.stringify(qty)); }
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+/* ---------- 小工具 ---------- */
+function statusLabel(key) {
+  const s = STATUSES.find(x => x.key === key);
+  return s ? s.label : key;
+}
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+function statusSelect(current, onChange) {
+  const sel = el('select', 'status');
+  STATUSES.forEach(s => {
+    const o = el('option', null, s.label);
+    o.value = s.key;
+    if (s.key === current) o.selected = true;
+    sel.appendChild(o);
+  });
+  sel.addEventListener('change', () => onChange(sel.value));
+  return sel;
+}
+
+/* 唯讀狀態標籤（用於明天穿區塊，顯示衣物本來的狀態） */
+function statusTag(key) {
+  return el('span', 'status-tag', statusLabel(key));
+}
+
+/* 建立衣物名稱區塊：主文字會截斷，數量標籤/尾綴永不被截斷 */
+function nameBlock(label, opts = {}) {
+  const name = el('div', 'name');
+  const text = el('span', 'name-text');
+  (Array.isArray(label) ? label : [label]).forEach(p => {
+    text.appendChild(typeof p === 'string' ? document.createTextNode(p) : p);
+  });
+  name.appendChild(text);
+  if (opts.badge != null) name.appendChild(el('span', 'qty-badge', '×' + opts.badge));
+  if (opts.tail) name.appendChild(el('span', 'name-tail', opts.tail));
+  return name;
+}
+
+/* =========================================================
+   新增衣物
+   ========================================================= */
+function isNamed(cat) { return NAMED_CATS.includes(cat); }
+
+function addItem() {
+  const cat = document.getElementById('addCat').value;
+  const nameInput = document.getElementById('addName');
+  const n = Math.max(1, parseInt(document.getElementById('addQty').value, 10) || 1);
+
+  if (isNamed(cat)) {
+    const base = nameInput.value.trim();
+    if (!base) { nameInput.focus(); return; }
+    for (let i = 0; i < n; i++) {
+      const name = n > 1 ? `${base} ${i + 1}` : base;
+      named.push({ id: uid(), cat, name, status: 'clean', planned: false });
+    }
+    saveNamed();
+    nameInput.value = '';
+  } else {
+    qty[cat].clean += n;
+    saveQty();
+  }
+  document.getElementById('addQty').value = 1;
+  closeAddModal();
+  render();
+}
+
+/* ---------- 彈窗開關 ---------- */
+function openAddModal() {
+  document.getElementById('addModal').classList.add('open');
+  syncNameField();
+  const cat = document.getElementById('addCat').value;
+  const focusEl = isNamed(cat)
+    ? document.getElementById('addName')
+    : document.getElementById('addQty');
+  setTimeout(() => focusEl.focus(), 60);
+}
+function closeAddModal() {
+  document.getElementById('addModal').classList.remove('open');
+}
+
+function syncNameField() {
+  const cat = document.getElementById('addCat').value;
+  document.getElementById('nameField').style.display = isNamed(cat) ? '' : 'none';
+}
+
+/* =========================================================
+   具名衣物操作
+   ========================================================= */
+function setNamedStatus(id, status) {
+  const it = named.find(x => x.id === id);
+  if (it) { it.status = status; saveNamed(); render(); }
+}
+function togglePlan(id) {
+  const it = named.find(x => x.id === id);
+  if (it) { it.planned = !it.planned; saveNamed(); render(); }
+}
+function cancelPlanNamed(id) {
+  const it = named.find(x => x.id === id);
+  if (it) { it.planned = false; saveNamed(); render(); }
+}
+function deleteNamed(id) {
+  named = named.filter(x => x.id !== id);
+  saveNamed(); render();
+}
+
+/* =========================================================
+   數量類操作
+   ========================================================= */
+function bulkMoveQty(cat, from, to) {
+  if (from === to) return;
+  const amount = qty[cat][from];
+  qty[cat][from] = 0;
+  qty[cat][to] += amount;
+  saveQty(); render();
+}
+function moveOneQty(cat, from, to) {   // 只移動一件：from -1、to +1（目標狀態卡片不存在時自動出現）
+  if (from === to) return;
+  if (qty[cat][from] > 0) {
+    qty[cat][from] -= 1;
+    qty[cat][to] += 1;
+    saveQty(); render();
+  }
+}
+function planQty(cat, from) {          // 從 clean/reusable 扣 1，plan[from] +1（記住來源狀態）
+  if (qty[cat][from] > 0) {
+    qty[cat][from] -= 1;
+    qty[cat].plan[from] = (qty[cat].plan[from] || 0) + 1;
+    saveQty(); render();
+  }
+}
+function cancelPlanQty(cat, from) {     // plan[from] -1，退回原本的狀態
+  if (qty[cat].plan[from] > 0) {
+    qty[cat].plan[from] -= 1;
+    qty[cat][from] += 1;
+    saveQty(); render();
+  }
+}
+function removeQty(cat, status) {       // 該狀態 -1
+  if (qty[cat][status] > 0) {
+    qty[cat][status] -= 1;
+    saveQty(); render();
+  }
+}
+
+/* =========================================================
+   今天穿上
+   ========================================================= */
+function wearToday() {
+  named.forEach(it => {
+    if (it.planned) { it.status = 'wearing'; it.planned = false; }
+  });
+  QTY_CATS.forEach(c => {
+    qty[c].wearing += planTotal(c);
+    qty[c].plan = { clean: 0, reusable: 0 };
+  });
+  saveNamed(); saveQty(); render();
+}
+
+/* =========================================================
+   Render：正在穿
+   ========================================================= */
+function renderWearing() {
+  const box = document.getElementById('wearingList');
+  box.innerHTML = '';
+  let total = 0;
+
+  named.filter(it => it.status === 'wearing').forEach(it => {
+    total++;
+    const row = el('div', 'item');
+    row.appendChild(nameBlock([el('span', 'cat-tag', it.cat + '：'), it.name]));
+    row.appendChild(statusSelect(it.status, s => setNamedStatus(it.id, s)));
+    box.appendChild(row);
+  });
+
+  QTY_CATS.forEach(c => {
+    const num = qty[c].wearing;
+    if (num > 0) {
+      total += num;
+      const row = el('div', 'item');
+      row.appendChild(nameBlock(c, { badge: num }));
+      row.appendChild(statusSelect('wearing', s => bulkMoveQty(c, 'wearing', s)));
+      box.appendChild(row);
+    }
+  });
+
+  document.getElementById('wearingCount').textContent = total || '';
+  if (total === 0) box.appendChild(el('div', 'empty', '目前沒有正在穿的衣物'));
+}
+
+/* =========================================================
+   Render：明天穿
+   ========================================================= */
+function renderPlan() {
+  const box = document.getElementById('planList');
+  box.innerHTML = '';
+  let total = 0;
+
+  named.filter(it => it.planned).forEach(it => {
+    total++;
+    const row = el('div', 'item plan-card');
+    row.appendChild(nameBlock([el('span', 'cat-tag', it.cat + '：'), it.name]));
+    row.appendChild(statusTag(it.status));          // 顯示本來的狀態
+    const cancel = el('button', 'btn-cancel', '取消');
+    cancel.addEventListener('click', () => cancelPlanNamed(it.id));
+    row.appendChild(cancel);
+    box.appendChild(row);
+  });
+
+  QTY_CATS.forEach(c => {
+    PLAN_SOURCES.forEach(src => {
+      const num = qty[c].plan[src] || 0;
+      if (num > 0) {
+        total += num;
+        const row = el('div', 'item plan-card');
+        row.appendChild(nameBlock(c, { badge: num }));
+        row.appendChild(statusTag(src));            // 顯示本來的狀態（乾淨 / 可再穿一次）
+        const cancel = el('button', 'btn-cancel', '取消');
+        cancel.addEventListener('click', () => cancelPlanQty(c, src));
+        row.appendChild(cancel);
+        box.appendChild(row);
+      }
+    });
+  });
+
+  document.getElementById('planCount').textContent = total || '';
+  if (total === 0) box.appendChild(el('div', 'empty', '還沒規劃明天要穿的衣物'));
+}
+
+/* =========================================================
+   Render：具名分類清單
+   ========================================================= */
+function renderNamedCat(container, cat) {
+  const items = named.filter(it => it.cat === cat);
+  const box = el('div', 'items');
+  if (items.length === 0) {
+    box.appendChild(el('div', 'empty', '（尚無衣物）'));
+  } else {
+    items.forEach(it => {
+      const row = el('div', 'item' + (it.planned ? ' planned' : ''));
+      row.appendChild(nameBlock(it.name));
+      row.appendChild(statusSelect(it.status, s => setNamedStatus(it.id, s)));
+
+      const planBtn = el('button', 'btn-ghost' + (it.planned ? ' active' : ''), '明天穿');
+      planBtn.addEventListener('click', () => togglePlan(it.id));
+      row.appendChild(planBtn);
+
+      const x = el('button', 'btn-x', '✕');
+      x.title = '刪除';
+      x.addEventListener('click', () => deleteNamed(it.id));
+      row.appendChild(x);
+
+      box.appendChild(row);
+    });
+  }
+  container.appendChild(box);
+}
+
+/* =========================================================
+   Render：數量類分類清單
+   ========================================================= */
+function renderQtyCat(container, cat) {
+  const data = qty[cat];
+  const box = el('div', 'items');
+  const totalStock = data.wearing + data.clean + data.reusable + data.dirty + planTotal(cat);
+
+  if (totalStock === 0) {
+    box.appendChild(el('div', 'empty', '（尚無衣物）'));
+    container.appendChild(box);
+    return;
+  }
+
+  const perPiece = PER_PIECE_CATS.includes(cat);
+  STATUSES.forEach(st => {
+    const num = data[st.key];
+    if (num <= 0) return;
+    const row = el('div', 'item');
+    row.appendChild(nameBlock(cat, { badge: num }));
+    row.appendChild(statusSelect(st.key, s =>
+      perPiece ? moveOneQty(cat, st.key, s) : bulkMoveQty(cat, st.key, s)));
+
+    // 明天穿：僅 clean / reusable
+    if (st.key === 'clean' || st.key === 'reusable') {
+      const planBtn = el('button', 'btn-ghost', '明天穿');
+      planBtn.addEventListener('click', () => planQty(cat, st.key));
+      row.appendChild(planBtn);
+    }
+
+    const x = el('button', 'btn-x', '✕');
+    x.title = '減 1 件';
+    x.addEventListener('click', () => removeQty(cat, st.key));
+    row.appendChild(x);
+
+    box.appendChild(row);
+  });
+
+  // plan 卡片：依來源狀態分開顯示，尾綴標示本來的狀態
+  PLAN_SOURCES.forEach(src => {
+    const num = data.plan[src] || 0;
+    if (num > 0) {
+      const row = el('div', 'item plan-card');
+      row.appendChild(nameBlock(cat, { badge: num, tail: '明天穿' }));
+      row.appendChild(statusTag(src));
+      const cancel = el('button', 'btn-cancel', '取消');
+      cancel.addEventListener('click', () => cancelPlanQty(cat, src));
+      row.appendChild(cancel);
+      box.appendChild(row);
+    }
+  });
+
+  container.appendChild(box);
+}
+
+/* =========================================================
+   Render：整個分類區塊
+   ========================================================= */
+function renderLists() {
+  const panel = document.getElementById('listsPanel');
+  panel.innerHTML = '';
+  panel.appendChild(el('h2', 'section-title', '衣物清單'));
+
+  const order = [
+    { type: 'named', cat: '上衣' },
+    { type: 'named', cat: '下身' },
+    { type: 'named', cat: '洋裝' },
+    { type: 'group', label: '🩲 內衣褲', cats: ['胸罩', '內褲', '安全褲'] },
+    { type: 'qty',   cat: '襪子' },
+    { type: 'named', cat: '睡衣' },
+    { type: 'named', cat: '外套' },
+  ];
+
+  order.forEach(entry => {
+    if (entry.type === 'named') {
+      panel.appendChild(el('div', 'subhead', CAT_ICON[entry.cat] + ' ' + entry.cat));
+      renderNamedCat(panel, entry.cat);
+    } else if (entry.type === 'qty') {
+      panel.appendChild(el('div', 'subhead', CAT_ICON[entry.cat] + ' ' + entry.cat));
+      renderQtyCat(panel, entry.cat);
+    } else if (entry.type === 'group') {
+      panel.appendChild(el('div', 'subhead', entry.label));
+      entry.cats.forEach(c => {
+        const sub = el('div', 'subhead');
+        sub.style.fontWeight = '600';
+        sub.style.color = 'var(--ink-faint)';
+        sub.style.marginTop = '10px';
+        sub.textContent = CAT_ICON[c] + ' ' + c;
+        panel.appendChild(sub);
+        renderQtyCat(panel, c);
+      });
+    }
+  });
+}
+
+/* ---------- 手機：右滑刪除 ----------
+   在觸控裝置上，為衣物清單中「有 ✕ 刪除鈕」的卡片加上右滑手勢；
+   滑過寬度 40% 即觸發原本 ✕ 的動作（具名＝刪除、數量類＝減 1 件）。 */
+const IS_TOUCH = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || ('ontouchstart' in window);
+
+function enableSwipe() {
+  if (!IS_TOUCH) return;
+  document.querySelectorAll('#listsPanel .item').forEach(row => {
+    const xbtn = row.querySelector('.btn-x');
+    if (!xbtn || (row.parentElement && row.parentElement.classList.contains('swipe-wrap'))) return;
+
+    // 包一層，露出紅色刪除底
+    const wrap = document.createElement('div');
+    wrap.className = 'swipe-wrap';
+    const bg = document.createElement('div');
+    bg.className = 'swipe-bg';
+    bg.textContent = (xbtn.title === '減 1 件') ? '減 1 件' : '刪除';
+    row.parentNode.insertBefore(wrap, row);
+    wrap.appendChild(bg);
+    wrap.appendChild(row);
+
+    let startX = 0, startY = 0, dx = 0, active = false, decided = false, horiz = false;
+    const threshold = () => row.offsetWidth * 0.4;
+
+    row.addEventListener('touchstart', e => {
+      const t = e.touches[0];
+      startX = t.clientX; startY = t.clientY;
+      dx = 0; active = true; decided = false; horiz = false;
+      row.style.transition = 'none';
+    }, { passive: true });
+
+    row.addEventListener('touchmove', e => {
+      if (!active) return;
+      const t = e.touches[0];
+      const mx = t.clientX - startX, my = t.clientY - startY;
+      if (!decided) {
+        if (Math.abs(mx) < 8 && Math.abs(my) < 8) return;
+        decided = true;
+        horiz = Math.abs(mx) > Math.abs(my);
+        if (!horiz) { active = false; return; }   // 垂直手勢 → 交還捲動
+      }
+      dx = Math.max(0, mx);                         // 只吃向右
+      e.preventDefault();
+      row.style.transform = 'translateX(' + dx + 'px)';
+      wrap.classList.toggle('armed', dx > threshold());
+    }, { passive: false });
+
+    const finish = () => {
+      if (!active) return;
+      active = false;
+      row.style.transition = 'transform .2s ease';
+      if (dx > threshold()) {
+        row.style.transform = 'translateX(100%)';
+        setTimeout(() => xbtn.click(), 170);        // 觸發刪除 → 重新 render
+      } else {
+        row.style.transform = 'translateX(0)';
+        wrap.classList.remove('armed');
+      }
+    };
+    row.addEventListener('touchend', finish, { passive: true });
+    row.addEventListener('touchcancel', finish, { passive: true });
+  });
+}
+
+/* ---------- 主 render ---------- */
+function render() {
+  renderWearing();
+  renderPlan();
+  renderLists();
+  enableSwipe();
+}
+
+/* ---------- 初始化 ---------- */
+function initAddForm() {
+  const sel = document.getElementById('addCat');
+  ALL_CATS.forEach(c => {
+    const o = el('option', null, CAT_ICON[c] + ' ' + c);
+    o.value = c;
+    sel.appendChild(o);
+  });
+  sel.addEventListener('change', syncNameField);
+  syncNameField();
+
+  document.getElementById('addBtn').addEventListener('click', addItem);
+  document.getElementById('addName').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addItem();
+  });
+  document.getElementById('wearTodayBtn').addEventListener('click', wearToday);
+
+  // 彈窗
+  document.getElementById('openAddBtn').addEventListener('click', openAddModal);
+  document.getElementById('closeAddBtn').addEventListener('click', closeAddModal);
+  document.getElementById('addModal').addEventListener('click', e => {
+    if (e.target.id === 'addModal') closeAddModal();   // 點背景關閉
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeAddModal();
+  });
+}
+
+if (IS_TOUCH) document.body.classList.add('touch');
+loadData();
+initAddForm();
+render();
+</script>
+</body>
+</html>

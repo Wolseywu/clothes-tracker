@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "clothes", "runtimeExecutable": "npx", "runtimeArgs": ["--yes", "http-server", "-p", "4611", "-c-1"], "port": 4611 }
+  ]
+}
