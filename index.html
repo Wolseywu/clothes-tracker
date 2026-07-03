@@ -21,6 +21,10 @@
     --green-500: #35b56a;
     --green-600: #2a9c5a;
     --green-bg: #eafaf0;
+    --orange-100: #fff2e8;
+    --orange-500: #d06632;
+    --orange-600: #a54d24;
+    --orange-700: #8b3e1d;
     --ink: #1f2733;
     --ink-soft: #5b6675;
     --ink-faint: #92a0b3;
@@ -51,23 +55,11 @@
 
   /* Header */
   header.app-head {
-    text-align: center;
+    display: grid;
+    gap: 4px;
+    text-align: left;
     margin-bottom: 22px;
   }
-  .add-open-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    margin-top: 12px;
-    background: transparent;
-    color: var(--blue-600);
-    font-size: 14px;
-    font-weight: 600;
-    padding: 6px 8px;
-    border-radius: 8px;
-  }
-  .add-open-btn:hover { background: var(--blue-50); }
-  .add-open-btn .plus { font-size: 17px; line-height: 1; font-weight: 700; }
   header.app-head h1 {
     margin: 0;
     font-size: 26px;
@@ -75,10 +67,51 @@
     letter-spacing: .3px;
   }
   header.app-head p {
-    margin: 6px 0 0;
+    margin: 0;
     color: var(--ink-soft);
     font-size: 14px;
   }
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 0;
+  }
+  .panel-head .section-title { margin: 0; }
+  .panel-head-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .panel-toggle {
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .panel-toggle img {
+    width: 24px;
+    height: 24px;
+    display: block;
+  }
+  .add-open-btn {
+    background: transparent;
+    color: var(--blue-600);
+    font-weight: 700;
+    padding: 0;
+    border-radius: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    font-size: 13px;
+  }
+  .add-open-btn:hover { background: transparent; text-decoration: underline; }
+  .add-open-btn .plus { font-size: 14px; line-height: 1; font-weight: 700; }
 
   /* Cards / panels */
   .panel {
@@ -111,10 +144,23 @@
     font-size: 13px;
     font-weight: 700;
     color: var(--ink-soft);
-    margin: 16px 0 8px;
+    margin: 22px 0 8px;
     padding-left: 2px;
   }
   .subhead:first-child { margin-top: 0; }
+  .subhead + .items {
+    margin-bottom: 18px;
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 0;
+  }
+  .panel-head .section-title { margin: 0; }
+  .btn-all { white-space: nowrap; }
 
   .section-divider {
     border-top: 1px dashed var(--line);
@@ -194,6 +240,17 @@
     background: transparent;
     color: var(--ink);
   }
+
+  .btn-wash {
+    background: transparent;
+    color: var(--blue-600);
+    font-weight: 700;
+    border: none;
+    padding: 0;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .btn-wash:hover { text-decoration: underline; }
 
   .btn-cancel {
     background: #fff;
@@ -316,6 +373,31 @@
     border-color: #d4dae2;
   }
   .overview--plan .section-title { color: var(--ink-soft); }
+  .overview--plan .section-title .count {
+    color: var(--ink-soft);
+    background: #e5e9ee;
+  }
+  .overview--laundry {
+    background: #fff8f0;
+    border-color: #f5dbc8;
+  }
+  .overview--laundry .section-title { color: var(--orange-700); }
+  .overview--laundry .section-title .count {
+    color: var(--orange-600);
+    background: var(--orange-100);
+  }
+  .overview--laundry .btn-all {
+    background: transparent;
+    color: var(--orange-600);
+    font-weight: 700;
+    border: none;
+    padding: 0;
+    margin-top: 0;
+  }
+  .overview--laundry .btn-all:hover { text-decoration: underline; }
+  .overview--laundry .btn-wash {
+    color: var(--orange-600);
+  }
   .count--muted {
     color: var(--ink-soft);
     background: #e5e9ee;
@@ -336,6 +418,57 @@
     background: #fff;
     border-color: transparent;
     box-shadow: 0 1px 3px rgba(24, 54, 92, .07);
+  }
+  .stacked-group {
+    border: 1px solid var(--line);
+    background: #f7f9fb;
+    border-radius: 14px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .stacked-card-wrapper {
+    position: relative;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .stacked-card-back {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid var(--line);
+    box-shadow: 0 1px 4px rgba(24, 54, 92, .08);
+    transform: translateY(calc(var(--offset) * 7px));
+    width: 100%;
+    height: 100%;
+  }
+  .stacked-summary {
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+    border-color: transparent;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(24, 54, 92, .07);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 10px 9px 14px;
+  }
+  .stacked-summary:hover {
+    background: #f7f9fb;
+  }
+  .stacked-summary .name-text {
+    color: var(--ink-soft);
+  }
+  .stacked-summary .collapsed-text {
+    color: var(--ink-soft);
+    font-size: 13px;
+    white-space: nowrap;
+    padding-right: 12px;
   }
 
   /* 手機右滑刪除 */
@@ -423,8 +556,7 @@
 
   <header class="app-head">
     <h1>🧳 旅行衣物追蹤器</h1>
-    <p>每天管理衣服狀態，告別臭臭衣</p>
-    <button class="add-open-btn" id="openAddBtn"><span class="plus">＋</span>新增衣物</button>
+    <p>長按可將衣物加入「明天穿」，左滑刪除衣物</p>
   </header>
 
   <!-- 2. 正在穿 -->
@@ -443,6 +575,19 @@
   <!-- 4. 各分類清單 -->
   <div class="panel" id="listsPanel"></div>
 
+  <!-- 5. 洗衣籃 -->
+  <div class="panel overview overview--laundry">
+    <div class="panel-head">
+      <h2 class="section-title">洗衣籃 <span class="count" id="laundryCount"></span></h2>
+      <div class="panel-head-controls">
+        <button class="btn-wear btn-all" id="laundryDoneBtn">全部洗好了</button>
+        <button class="btn-ghost panel-toggle" id="toggleLaundryBtn" title="展開洗衣籃">
+          <img src="arrow_caret_down_02.svg" alt="展開洗衣籃">
+        </button>
+      </div>
+    </div>
+    <div class="items" id="laundryList"></div>
+  </div>
 </div>
 
 <!-- 新增衣物彈窗 -->
@@ -562,6 +707,22 @@ function planTotal(cat) {
   return PLAN_SOURCES.reduce((n, s) => n + (qty[cat].plan[s] || 0), 0);
 }
 
+const expandedWearing = { group: false };
+const expandedPlan = { group: false };
+let expandedLists = false;
+let expandedLaundry = false;
+function resetExpandedState() {
+  expandedWearing.group = false;
+  expandedPlan.group = false;
+  expandedLists = false;
+  expandedLaundry = false;
+  QTY_CATS.forEach(c => {
+    expandedWearing[c] = false;
+    expandedPlan[c] = false;
+  });
+}
+resetExpandedState();
+
 function saveNamed() { store.set('clothes-named', JSON.stringify(named)); }
 function saveQty()   { store.set('clothes-qty', JSON.stringify(qty)); }
 
@@ -590,6 +751,23 @@ function statusSelect(current, onChange) {
   return sel;
 }
 
+function addLongPress(target, callback) {
+  let timer = null;
+  const start = e => {
+    if (e.target.closest('button,select,input')) return;
+    timer = setTimeout(() => { timer = null; callback(); }, 500);
+  };
+  const finish = () => {
+    if (timer) { clearTimeout(timer); timer = null; }
+  };
+  target.addEventListener('mousedown', start);
+  target.addEventListener('touchstart', start, { passive: true });
+  target.addEventListener('mouseup', finish);
+  target.addEventListener('mouseleave', finish);
+  target.addEventListener('touchend', finish);
+  target.addEventListener('touchcancel', finish);
+}
+
 /* 唯讀狀態標籤（用於明天穿區塊，顯示衣物本來的狀態） */
 function statusTag(key) {
   return el('span', 'status-tag', statusLabel(key));
@@ -606,6 +784,18 @@ function nameBlock(label, opts = {}) {
   if (opts.badge != null) name.appendChild(el('span', 'qty-badge', '×' + opts.badge));
   if (opts.tail) name.appendChild(el('span', 'name-tail', opts.tail));
   return name;
+}
+
+function stackedCardWrapper(row, count) {
+  const wrapper = el('div', 'stacked-card-wrapper');
+  const stackCount = Math.min(count, 4);
+  for (let i = stackCount - 1; i > 0; i--) {
+    const back = el('div', 'stacked-card-back');
+    back.style.setProperty('--offset', i);
+    wrapper.appendChild(back);
+  }
+  wrapper.appendChild(row);
+  return wrapper;
 }
 
 /* =========================================================
@@ -736,26 +926,55 @@ function renderWearing() {
   box.innerHTML = '';
   let total = 0;
 
-  named.filter(it => it.status === 'wearing').forEach(it => {
+  named.filter(it => it.status === 'wearing' && !it.planned).forEach(it => {
     total++;
     const row = el('div', 'item');
     row.appendChild(nameBlock([el('span', 'cat-tag', it.cat + '：'), it.name]));
     row.appendChild(statusSelect(it.status, s => setNamedStatus(it.id, s)));
+    addLongPress(row, () => togglePlan(it.id));
     box.appendChild(row);
   });
 
-  QTY_CATS.forEach(c => {
-    const num = qty[c].wearing;
-    if (num > 0) {
-      total += num;
-      const row = el('div', 'item');
-      row.appendChild(nameBlock(c, { badge: num }));
-      row.appendChild(statusSelect('wearing', s => bulkMoveQty(c, 'wearing', s)));
-      box.appendChild(row);
+  const totalQtyWearing = QTY_CATS.reduce((sum, c) => sum + qty[c].wearing, 0);
+  if (totalQtyWearing > 0) {
+    if (!expandedWearing.group) {
+      const row = el('div', 'item stacked-summary');
+      const label = el('div', 'name');
+      label.appendChild(el('span', 'name-text', '內衣褲或襪子'));
+      row.appendChild(label);
+      row.appendChild(el('span', 'collapsed-text', '共 ' + totalQtyWearing + ' 件'));
+      row.addEventListener('click', () => {
+        expandedWearing.group = true;
+        render();
+      });
+      box.appendChild(stackedCardWrapper(row, totalQtyWearing));
+    } else {
+      const group = el('div', 'stacked-group');
+      let anyExpanded = false;
+      QTY_CATS.forEach(c => {
+        const num = qty[c].wearing;
+        if (num > 0) {
+          anyExpanded = true;
+          const row = el('div', 'item');
+          row.appendChild(nameBlock(c, { badge: num }));
+          row.appendChild(statusSelect('wearing', s => bulkMoveQty(c, 'wearing', s)));
+          addLongPress(row, () => planQty(c, 'wearing'));
+          group.appendChild(row);
+        }
+      });
+      if (anyExpanded) {
+        const less = el('button', 'btn-ghost', '顯示較少');
+        less.addEventListener('click', () => {
+          expandedWearing.group = false;
+          render();
+        });
+        group.appendChild(less);
+      }
+      box.appendChild(group);
     }
-  });
+  }
 
-  document.getElementById('wearingCount').textContent = total || '';
+  document.getElementById('wearingCount').textContent = total;
   if (total === 0) box.appendChild(el('div', 'empty', '目前沒有正在穿的衣物'));
 }
 
@@ -769,8 +988,8 @@ function renderPlan() {
 
   named.filter(it => it.planned).forEach(it => {
     total++;
-    const row = el('div', 'item plan-card');
-    row.appendChild(nameBlock([el('span', 'cat-tag', it.cat + '：'), it.name]));
+    const row = el('div', 'item plan-card planned');
+    row.appendChild(nameBlock([el('span', 'cat-tag', it.cat + '：'), it.name], { tail: '明天穿' }));
     row.appendChild(statusTag(it.status));          // 顯示本來的狀態
     const cancel = el('button', 'btn-cancel', '取消');
     cancel.addEventListener('click', () => cancelPlanNamed(it.id));
@@ -778,43 +997,146 @@ function renderPlan() {
     box.appendChild(row);
   });
 
+  const totalQtyPlan = QTY_CATS.reduce((sum, c) => sum + planTotal(c), 0);
+  if (totalQtyPlan > 0) {
+    if (!expandedPlan.group) {
+      const row = el('div', 'item stacked-summary');
+      const label = el('div', 'name');
+      label.appendChild(el('span', 'name-text', '內衣褲或襪子'));
+      row.appendChild(label);
+      row.appendChild(el('span', 'collapsed-text', '共 ' + totalQtyPlan + ' 件'));
+      row.addEventListener('click', () => {
+        expandedPlan.group = true;
+        render();
+      });
+      box.appendChild(stackedCardWrapper(row, totalQtyPlan));
+    } else {
+      const group = el('div', 'stacked-group');
+      let anyExpanded = false;
+      QTY_CATS.forEach(c => {
+        const count = planTotal(c);
+        if (count > 0) {
+          PLAN_SOURCES.forEach(src => {
+            const num = qty[c].plan[src] || 0;
+            if (num > 0) {
+              anyExpanded = true;
+              const row = el('div', 'item plan-card planned');
+              row.appendChild(nameBlock(c, { badge: num, tail: '明天穿' }));
+              row.appendChild(statusTag(src));
+              const cancel = el('button', 'btn-cancel', '取消');
+              cancel.addEventListener('click', () => cancelPlanQty(c, src));
+              row.appendChild(cancel);
+              group.appendChild(row);
+            }
+          });
+        }
+      });
+      if (anyExpanded) {
+        const less = el('button', 'btn-ghost', '顯示較少');
+        less.addEventListener('click', () => {
+          expandedPlan.group = false;
+          render();
+        });
+        group.appendChild(less);
+      }
+      box.appendChild(group);
+    }
+  }
+
+  document.getElementById('planCount').textContent = total;
+  if (total === 0) box.appendChild(el('div', 'empty', '還沒規劃明天要穿的衣物'));
+}
+
+function washLaundry() {
+  named.forEach(it => {
+    if (it.status === 'dirty') it.status = 'clean';
+  });
   QTY_CATS.forEach(c => {
-    PLAN_SOURCES.forEach(src => {
-      const num = qty[c].plan[src] || 0;
+    qty[c].clean += qty[c].dirty;
+    qty[c].dirty = 0;
+  });
+  saveNamed(); saveQty(); render();
+}
+function washLaundryNamed(id) {
+  const it = named.find(x => x.id === id);
+  if (!it || it.status !== 'dirty') return;
+  it.status = 'clean';
+  saveNamed(); render();
+}
+function washLaundryQtyOne(cat) {
+  if (qty[cat].dirty > 0) {
+    qty[cat].dirty -= 1;
+    qty[cat].clean += 1;
+    saveQty(); render();
+  }
+}
+function renderLaundry() {
+  const box = document.getElementById('laundryList');
+  const laundryDoneBtn = document.getElementById('laundryDoneBtn');
+  const toggleLaundryBtn = document.getElementById('toggleLaundryBtn');
+
+  const totalDirty = named.filter(it => it.status === 'dirty').length + QTY_CATS.reduce((sum, cat) => sum + qty[cat].dirty, 0);
+
+  if (laundryDoneBtn) {
+    laundryDoneBtn.style.display = expandedLaundry ? '' : 'none';
+  }
+  if (toggleLaundryBtn) {
+    toggleLaundryBtn.title = expandedLaundry ? '收合洗衣籃' : '展開洗衣籃';
+    toggleLaundryBtn.innerHTML = '';
+    const icon = el('img', 'panel-toggle-icon');
+    icon.src = expandedLaundry ? 'arrow_caret_up_02.svg' : 'arrow_caret_down_02.svg';
+    icon.alt = expandedLaundry ? '收合洗衣籃' : '展開洗衣籃';
+    toggleLaundryBtn.appendChild(icon);
+  }
+
+  box.innerHTML = '';
+
+  if (expandedLaundry) {
+    let total = 0;
+    named.filter(it => it.status === 'dirty').forEach(it => {
+      total++;
+      const row = el('div', 'item');
+      row.appendChild(nameBlock([el('span', 'cat-tag', it.cat + '：'), it.name]));
+      const btn = el('button', 'btn-wash', '洗好了');
+      btn.addEventListener('click', () => washLaundryNamed(it.id));
+      row.appendChild(btn);
+      box.appendChild(row);
+    });
+
+    QTY_CATS.forEach(cat => {
+      const num = qty[cat].dirty;
       if (num > 0) {
         total += num;
-        const row = el('div', 'item plan-card');
-        row.appendChild(nameBlock(c, { badge: num }));
-        row.appendChild(statusTag(src));            // 顯示本來的狀態（乾淨 / 可再穿一次）
-        const cancel = el('button', 'btn-cancel', '取消');
-        cancel.addEventListener('click', () => cancelPlanQty(c, src));
-        row.appendChild(cancel);
+        const row = el('div', 'item');
+        row.appendChild(nameBlock(cat, { badge: num }));
+        const btn = el('button', 'btn-wash', '洗好了');
+        btn.addEventListener('click', () => washLaundryQtyOne(cat));
+        row.appendChild(btn);
         box.appendChild(row);
       }
     });
-  });
 
-  document.getElementById('planCount').textContent = total || '';
-  if (total === 0) box.appendChild(el('div', 'empty', '還沒規劃明天要穿的衣物'));
+    if (total === 0) box.appendChild(el('div', 'empty', '洗衣籃目前是空的'));
+  }
+
+  document.getElementById('laundryCount').textContent = totalDirty;
 }
 
 /* =========================================================
    Render：具名分類清單
    ========================================================= */
 function renderNamedCat(container, cat) {
-  const items = named.filter(it => it.cat === cat);
+  const items = named.filter(it => it.cat === cat && it.status !== 'dirty');
   const box = el('div', 'items');
   if (items.length === 0) {
     box.appendChild(el('div', 'empty', '（尚無衣物）'));
   } else {
     items.forEach(it => {
       const row = el('div', 'item' + (it.planned ? ' planned' : ''));
-      row.appendChild(nameBlock(it.name));
+      row.appendChild(nameBlock(it.name, it.planned ? { tail: '明天穿' } : {}));
       row.appendChild(statusSelect(it.status, s => setNamedStatus(it.id, s)));
 
-      const planBtn = el('button', 'btn-ghost' + (it.planned ? ' active' : ''), '明天穿');
-      planBtn.addEventListener('click', () => togglePlan(it.id));
-      row.appendChild(planBtn);
+      addLongPress(row, () => togglePlan(it.id));
 
       const x = el('button', 'btn-x', '✕');
       x.title = '刪除';
@@ -833,7 +1155,7 @@ function renderNamedCat(container, cat) {
 function renderQtyCat(container, cat) {
   const data = qty[cat];
   const box = el('div', 'items');
-  const totalStock = data.wearing + data.clean + data.reusable + data.dirty + planTotal(cat);
+  const totalStock = data.wearing + data.clean + data.reusable + planTotal(cat);
 
   if (totalStock === 0) {
     box.appendChild(el('div', 'empty', '（尚無衣物）'));
@@ -844,6 +1166,7 @@ function renderQtyCat(container, cat) {
   const perPiece = PER_PIECE_CATS.includes(cat);
   const canPlanWearing = ['內衣', '內褲', '安全褲', '襪子'].includes(cat);
   STATUSES.forEach(st => {
+    if (st.key === 'dirty') return;
     const num = data[st.key];
     if (num <= 0) return;
     const row = el('div', 'item');
@@ -851,11 +1174,9 @@ function renderQtyCat(container, cat) {
     row.appendChild(statusSelect(st.key, s =>
       perPiece ? moveOneQty(cat, st.key, s) : bulkMoveQty(cat, st.key, s)));
 
-    // 明天穿：clean / reusable，一般內衣褲與襪子也可從 wearing 規劃
-    if (st.key === 'clean' || st.key === 'reusable' || (st.key === 'wearing' && canPlanWearing)) {
-      const planBtn = el('button', 'btn-ghost', '明天穿');
-      planBtn.addEventListener('click', () => planQty(cat, st.key));
-      row.appendChild(planBtn);
+    const canPlan = st.key === 'clean' || st.key === 'reusable' || (st.key === 'wearing' && canPlanWearing);
+    if (canPlan) {
+      addLongPress(row, () => planQty(cat, st.key));
     }
 
     const x = el('button', 'btn-x', '✕');
@@ -866,11 +1187,10 @@ function renderQtyCat(container, cat) {
     box.appendChild(row);
   });
 
-  // plan 卡片：依來源狀態分開顯示，尾綴標示本來的狀態
   PLAN_SOURCES.forEach(src => {
     const num = data.plan[src] || 0;
     if (num > 0) {
-      const row = el('div', 'item plan-card');
+      const row = el('div', 'item plan-card planned');
       row.appendChild(nameBlock(cat, { badge: num, tail: '明天穿' }));
       row.appendChild(statusTag(src));
       const cancel = el('button', 'btn-cancel', '取消');
@@ -883,13 +1203,60 @@ function renderQtyCat(container, cat) {
   container.appendChild(box);
 }
 
+function namedCount(cat) {
+  return named.filter(it => it.cat === cat && it.status !== 'dirty').length;
+}
+function qtyCount(cat) {
+  const data = qty[cat];
+  return data.wearing + data.clean + data.reusable + planTotal(cat);
+}
+function groupQtyCount(cats) {
+  return cats.reduce((sum, c) => sum + qtyCount(c), 0);
+}
+function totalListPanelCount() {
+  return named.filter(it => it.status !== 'dirty').length + QTY_CATS.reduce((sum, c) => sum + qtyCount(c), 0);
+}
+
 /* =========================================================
    Render：整個分類區塊
    ========================================================= */
+function togglePanel(panel) {
+  if (panel === 'lists') expandedLists = !expandedLists;
+  if (panel === 'laundry') expandedLaundry = !expandedLaundry;
+  render();
+}
+
 function renderLists() {
   const panel = document.getElementById('listsPanel');
   panel.innerHTML = '';
-  panel.appendChild(el('h2', 'section-title', '衣物清單'));
+
+  const head = el('div', 'panel-head');
+  const title = el('h2', 'section-title');
+  title.appendChild(document.createTextNode('衣物清單'));
+  title.appendChild(el('span', 'count', totalListPanelCount()));
+  head.appendChild(title);
+
+  const controls = el('div', 'panel-head-controls');
+  if (expandedLists) {
+    const addBtn = el('button', 'add-open-btn', '＋ 新增衣物');
+    addBtn.addEventListener('click', openAddModal);
+    controls.appendChild(addBtn);
+  }
+  const toggleBtn = el('button', 'btn-ghost panel-toggle');
+  const icon = el('img', 'panel-toggle-icon');
+  icon.src = expandedLists ? 'arrow_caret_up_02.svg' : 'arrow_caret_down_02.svg';
+  icon.alt = expandedLists ? '收合衣物清單' : '展開衣物清單';
+  toggleBtn.appendChild(icon);
+  toggleBtn.title = expandedLists ? '收合衣物清單' : '展開衣物清單';
+  toggleBtn.addEventListener('click', () => togglePanel('lists'));
+  controls.appendChild(toggleBtn);
+
+  head.appendChild(controls);
+  panel.appendChild(head);
+
+  if (!expandedLists) {
+    return;
+  }
 
   const order = [
     { type: 'named', cat: '上衣' },
@@ -903,13 +1270,16 @@ function renderLists() {
 
   order.forEach(entry => {
     if (entry.type === 'named') {
-      panel.appendChild(el('div', 'subhead', CAT_ICON[entry.cat] + ' ' + entry.cat));
+      const count = namedCount(entry.cat);
+      panel.appendChild(el('div', 'subhead', CAT_ICON[entry.cat] + ' ' + entry.cat + ' (' + count + ')'));
       renderNamedCat(panel, entry.cat);
     } else if (entry.type === 'qty') {
-      panel.appendChild(el('div', 'subhead', CAT_ICON[entry.cat] + ' ' + entry.cat));
+      const count = qtyCount(entry.cat);
+      panel.appendChild(el('div', 'subhead', CAT_ICON[entry.cat] + ' ' + entry.cat + ' (' + count + ')'));
       renderQtyCat(panel, entry.cat);
     } else if (entry.type === 'group') {
-      panel.appendChild(el('div', 'subhead', entry.label));
+      const count = groupQtyCount(entry.cats);
+      panel.appendChild(el('div', 'subhead', entry.label + ' (' + count + ')'));
       entry.cats.forEach((c, index) => {
         if (index > 0) {
           const divider = el('div', 'section-divider');
@@ -990,6 +1360,7 @@ function render() {
   renderWearing();
   renderPlan();
   renderLists();
+  renderLaundry();
   enableSwipe();
 }
 
@@ -1009,9 +1380,13 @@ function initAddForm() {
     if (e.key === 'Enter') addItem();
   });
   document.getElementById('wearTodayBtn').addEventListener('click', wearToday);
+  document.getElementById('laundryDoneBtn').addEventListener('click', washLaundry);
 
   // 彈窗
-  document.getElementById('openAddBtn').addEventListener('click', openAddModal);
+  const openBtn = document.getElementById('openAddBtn');
+  if (openBtn) openBtn.addEventListener('click', openAddModal);
+  const toggleLaundryBtn = document.getElementById('toggleLaundryBtn');
+  if (toggleLaundryBtn) toggleLaundryBtn.addEventListener('click', () => togglePanel('laundry'));
   document.getElementById('closeAddBtn').addEventListener('click', closeAddModal);
   document.getElementById('addModal').addEventListener('click', e => {
     if (e.target.id === 'addModal') closeAddModal();   // 點背景關閉
