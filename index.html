@@ -116,6 +116,11 @@
   }
   .subhead:first-child { margin-top: 0; }
 
+  .section-divider {
+    border-top: 1px dashed var(--line);
+    margin: 12px 0;
+  }
+
   /* Add form */
   .add-grid {
     display: grid;
@@ -178,7 +183,7 @@
 
   .btn-ghost {
     background: transparent;
-    color: var(--blue-600);
+    color: var(--ink-soft);
     font-weight: 600;
     border: none;
     padding: 6px 8px;
@@ -350,8 +355,9 @@
     inset: 0;
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 6px;
-    padding-left: 18px;
+    padding-right: 18px;
     background: var(--danger);
     color: #fff;
     font-size: 13px;
@@ -499,11 +505,11 @@ const store = {
 
 /* ---------- 分類定義 ---------- */
 const NAMED_CATS = ['上衣', '下身', '洋裝', '睡衣', '外套'];
-const QTY_CATS   = ['胸罩', '內褲', '安全褲', '襪子'];
+const QTY_CATS   = ['內衣', '內褲', '安全褲', '襪子'];
 const ALL_CATS   = [...NAMED_CATS, ...QTY_CATS];
 
 // 內衣褲：件數多、可同時處於多種狀態，改狀態時「一次只移動一件」（而非整批切換）
-const PER_PIECE_CATS = ['胸罩', '內褲', '安全褲'];
+const PER_PIECE_CATS = ['內衣', '內褲', '安全褲', '襪子'];
 
 const STATUSES = [
   { key: 'wearing',  label: '🧍 正在穿' },
@@ -515,12 +521,12 @@ const STATUSES = [
 /* 分類清單顯示順序與 emoji（含內衣褲群組） */
 const CAT_ICON = {
   '上衣': '👚', '下身': '👖', '洋裝': '👗', '睡衣': '🌙', '外套': '🧥',
-  '胸罩': '🩲', '內褲': '🩲', '安全褲': '🩲', '襪子': '🧦'
+  '內衣': '🩲', '內褲': '🩲', '安全褲': '🩲', '襪子': '🧦'
 };
 
 /* ---------- 狀態資料 ---------- */
 let named = [];   // [{id, cat, name, status, planned}]
-let qty   = {};   // { '胸罩': {wearing, clean, reusable, dirty, plan}, ... }
+let qty   = {};   // { '內衣': {wearing, clean, reusable, dirty, plan}, ... }
 
 function loadData() {
   try { named = JSON.parse(store.get('clothes-named', '[]')) || []; }
@@ -550,8 +556,8 @@ function loadData() {
   });
 }
 
-/* 明天穿只會從 clean / reusable 撥出，這裡列出可作為 plan 來源的狀態 */
-const PLAN_SOURCES = ['clean', 'reusable'];
+/* 明天穿可從 clean / reusable / wearing 撥出，這裡列出可作為 plan 來源的狀態 */
+const PLAN_SOURCES = ['clean', 'reusable', 'wearing'];
 function planTotal(cat) {
   return PLAN_SOURCES.reduce((n, s) => n + (qty[cat].plan[s] || 0), 0);
 }
@@ -836,6 +842,7 @@ function renderQtyCat(container, cat) {
   }
 
   const perPiece = PER_PIECE_CATS.includes(cat);
+  const canPlanWearing = ['內衣', '內褲', '安全褲', '襪子'].includes(cat);
   STATUSES.forEach(st => {
     const num = data[st.key];
     if (num <= 0) return;
@@ -844,8 +851,8 @@ function renderQtyCat(container, cat) {
     row.appendChild(statusSelect(st.key, s =>
       perPiece ? moveOneQty(cat, st.key, s) : bulkMoveQty(cat, st.key, s)));
 
-    // 明天穿：僅 clean / reusable
-    if (st.key === 'clean' || st.key === 'reusable') {
+    // 明天穿：clean / reusable，一般內衣褲與襪子也可從 wearing 規劃
+    if (st.key === 'clean' || st.key === 'reusable' || (st.key === 'wearing' && canPlanWearing)) {
       const planBtn = el('button', 'btn-ghost', '明天穿');
       planBtn.addEventListener('click', () => planQty(cat, st.key));
       row.appendChild(planBtn);
@@ -888,7 +895,7 @@ function renderLists() {
     { type: 'named', cat: '上衣' },
     { type: 'named', cat: '下身' },
     { type: 'named', cat: '洋裝' },
-    { type: 'group', label: '🩲 內衣褲', cats: ['胸罩', '內褲', '安全褲'] },
+    { type: 'group', label: '🩲 內衣褲', cats: ['內衣', '內褲', '安全褲'] },
     { type: 'qty',   cat: '襪子' },
     { type: 'named', cat: '睡衣' },
     { type: 'named', cat: '外套' },
@@ -903,13 +910,11 @@ function renderLists() {
       renderQtyCat(panel, entry.cat);
     } else if (entry.type === 'group') {
       panel.appendChild(el('div', 'subhead', entry.label));
-      entry.cats.forEach(c => {
-        const sub = el('div', 'subhead');
-        sub.style.fontWeight = '600';
-        sub.style.color = 'var(--ink-faint)';
-        sub.style.marginTop = '10px';
-        sub.textContent = CAT_ICON[c] + ' ' + c;
-        panel.appendChild(sub);
+      entry.cats.forEach((c, index) => {
+        if (index > 0) {
+          const divider = el('div', 'section-divider');
+          panel.appendChild(divider);
+        }
         renderQtyCat(panel, c);
       });
     }
@@ -957,9 +962,9 @@ function enableSwipe() {
         horiz = Math.abs(mx) > Math.abs(my);
         if (!horiz) { active = false; return; }   // 垂直手勢 → 交還捲動
       }
-      dx = Math.max(0, mx);                         // 只吃向右
+      dx = Math.max(0, -mx);                        // 只吃向左（往左滑的距離）
       e.preventDefault();
-      row.style.transform = 'translateX(' + dx + 'px)';
+      row.style.transform = 'translateX(' + (-dx) + 'px)';
       wrap.classList.toggle('armed', dx > threshold());
     }, { passive: false });
 
@@ -968,7 +973,7 @@ function enableSwipe() {
       active = false;
       row.style.transition = 'transform .2s ease';
       if (dx > threshold()) {
-        row.style.transform = 'translateX(100%)';
+        row.style.transform = 'translateX(-100%)';
         setTimeout(() => xbtn.click(), 170);        // 觸發刪除 → 重新 render
       } else {
         row.style.transform = 'translateX(0)';
