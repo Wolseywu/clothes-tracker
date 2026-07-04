@@ -363,6 +363,35 @@
     border-style: dashed;
     border-width: 1.5px;
   }
+  .overview--wearing .panel-head { margin-bottom: 12px; }
+  .dropdown { position: relative; }
+  .dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 30;
+    min-width: 150px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(24, 54, 92, .14);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .dropdown-menu[hidden] { display: none; }
+  .dropdown-item {
+    background: transparent;
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .dropdown-item:hover { background: var(--blue-50); }
   .overview--wearing {
     background: var(--blue-50);
     border-color: var(--blue-200);
@@ -496,7 +525,9 @@
     font-size: 13px;
     font-weight: 700;
     border-radius: 12px;
+    opacity: 0;                 /* 平常隱藏，確認是左滑手勢才顯示，避免捲動時閃紅 */
   }
+  .swipe-wrap.dragging .swipe-bg { opacity: 1; }
   .swipe-bg::before { content: '🗑'; font-size: 15px; }
   .swipe-wrap.armed .swipe-bg { background: #cf4630; }
 
@@ -561,7 +592,13 @@
 
   <!-- 2. 正在穿 -->
   <div class="panel overview overview--wearing">
-    <h2 class="section-title">正在穿 <span class="count" id="wearingCount"></span></h2>
+    <div class="panel-head">
+      <h2 class="section-title">正在穿 <span class="count" id="wearingCount"></span></h2>
+      <div class="dropdown" id="bulkDropdown">
+        <button class="btn-ghost" id="selectAllBtn">全部改為</button>
+        <div class="dropdown-menu" id="bulkMenu" hidden></div>
+      </div>
+    </div>
     <div class="items" id="wearingList"></div>
   </div>
 
@@ -649,9 +686,10 @@ const store = {
 };
 
 /* ---------- 分類定義 ---------- */
-const NAMED_CATS = ['上衣', '下身', '洋裝', '睡衣', '外套'];
+const NAMED_CATS = ['上衣', '下身', '洋裝', '睡衣', '外套', '其他'];
 const QTY_CATS   = ['內衣', '內褲', '安全褲', '襪子'];
-const ALL_CATS   = [...NAMED_CATS, ...QTY_CATS];
+// 下拉選單順序：具名分類 → 數量類 →「其他」固定最後
+const ALL_CATS   = [...NAMED_CATS.filter(c => c !== '其他'), ...QTY_CATS, '其他'];
 
 // 內衣褲：件數多、可同時處於多種狀態，改狀態時「一次只移動一件」（而非整批切換）
 const PER_PIECE_CATS = ['內衣', '內褲', '安全褲', '襪子'];
@@ -666,7 +704,7 @@ const STATUSES = [
 /* 分類清單顯示順序與 emoji（含內衣褲群組） */
 const CAT_ICON = {
   '上衣': '👚', '下身': '👖', '洋裝': '👗', '睡衣': '🌙', '外套': '🧥',
-  '內衣': '🩲', '內褲': '🩲', '安全褲': '🩲', '襪子': '🧦'
+  '內衣': '🩲', '內褲': '🩲', '安全褲': '🩲', '襪子': '🧦', '其他': '👜'
 };
 
 /* ---------- 狀態資料 ---------- */
@@ -919,6 +957,23 @@ function wearToday() {
 }
 
 /* =========================================================
+   正在穿：全選批次轉換
+   ========================================================= */
+function bulkWearingTo(status) {
+  named.forEach(it => {
+    if (it.status === 'wearing') it.status = status;
+  });
+  QTY_CATS.forEach(c => {
+    qty[c][status] += qty[c].wearing;
+    qty[c].wearing = 0;
+  });
+  saveNamed(); saveQty();
+  closeBulkMenu();
+  render();
+}
+function closeBulkMenu() { document.getElementById('bulkMenu').hidden = true; }
+
+/* =========================================================
    Render：正在穿
    ========================================================= */
 function renderWearing() {
@@ -976,6 +1031,11 @@ function renderWearing() {
 
   document.getElementById('wearingCount').textContent = total;
   if (total === 0) box.appendChild(el('div', 'empty', '目前沒有正在穿的衣物'));
+
+  // 沒有任何正在穿的衣物時，隱藏「全部改為」並收起選單
+  const hasWearing = named.some(it => it.status === 'wearing') || totalQtyWearing > 0;
+  document.getElementById('selectAllBtn').style.display = hasWearing ? '' : 'none';
+  if (!hasWearing) closeBulkMenu();
 }
 
 /* =========================================================
@@ -1078,7 +1138,8 @@ function renderLaundry() {
   const totalDirty = named.filter(it => it.status === 'dirty').length + QTY_CATS.reduce((sum, cat) => sum + qty[cat].dirty, 0);
 
   if (laundryDoneBtn) {
-    laundryDoneBtn.style.display = expandedLaundry ? '' : 'none';
+    // 洗衣籃是空的就不顯示「全部洗好了」
+    laundryDoneBtn.style.display = (expandedLaundry && totalDirty > 0) ? '' : 'none';
   }
   if (toggleLaundryBtn) {
     toggleLaundryBtn.title = expandedLaundry ? '收合洗衣籃' : '展開洗衣籃';
@@ -1237,11 +1298,9 @@ function renderLists() {
   head.appendChild(title);
 
   const controls = el('div', 'panel-head-controls');
-  if (expandedLists) {
-    const addBtn = el('button', 'add-open-btn', '＋ 新增衣物');
-    addBtn.addEventListener('click', openAddModal);
-    controls.appendChild(addBtn);
-  }
+  const addBtn = el('button', 'add-open-btn', '＋ 新增衣物');
+  addBtn.addEventListener('click', openAddModal);
+  controls.appendChild(addBtn);
   const toggleBtn = el('button', 'btn-ghost panel-toggle');
   const icon = el('img', 'panel-toggle-icon');
   icon.src = expandedLists ? 'arrow_caret_up_02.svg' : 'arrow_caret_down_02.svg';
@@ -1266,6 +1325,7 @@ function renderLists() {
     { type: 'qty',   cat: '襪子' },
     { type: 'named', cat: '睡衣' },
     { type: 'named', cat: '外套' },
+    { type: 'named', cat: '其他' },
   ];
 
   order.forEach(entry => {
@@ -1327,10 +1387,12 @@ function enableSwipe() {
       const t = e.touches[0];
       const mx = t.clientX - startX, my = t.clientY - startY;
       if (!decided) {
-        if (Math.abs(mx) < 8 && Math.abs(my) < 8) return;
+        if (Math.abs(mx) < 10 && Math.abs(my) < 10) return;
         decided = true;
-        horiz = Math.abs(mx) > Math.abs(my);
-        if (!horiz) { active = false; return; }   // 垂直手勢 → 交還捲動
+        // 必須「明顯偏水平」且方向向左才算滑動刪除；快速捲動常帶少量水平位移，故要求 2 倍差距
+        horiz = mx < 0 && Math.abs(mx) > Math.abs(my) * 2;
+        if (!horiz) { active = false; return; }   // 垂直/向右手勢 → 交還捲動
+        wrap.classList.add('dragging');
       }
       dx = Math.max(0, -mx);                        // 只吃向左（往左滑的距離）
       e.preventDefault();
@@ -1348,6 +1410,7 @@ function enableSwipe() {
       } else {
         row.style.transform = 'translateX(0)';
         wrap.classList.remove('armed');
+        setTimeout(() => wrap.classList.remove('dragging'), 200);  // 等回彈動畫結束再藏紅底
       }
     };
     row.addEventListener('touchend', finish, { passive: true });
@@ -1381,6 +1444,21 @@ function initAddForm() {
   });
   document.getElementById('wearTodayBtn').addEventListener('click', wearToday);
   document.getElementById('laundryDoneBtn').addEventListener('click', washLaundry);
+
+  // 正在穿：「全部改為」→ 下拉選單一次改所有正在穿的衣物；點外面關閉
+  const bulkMenu = document.getElementById('bulkMenu');
+  STATUSES.filter(s => s.key !== 'wearing').forEach(s => {
+    const b = el('button', 'dropdown-item', s.label);
+    b.addEventListener('click', () => bulkWearingTo(s.key));
+    bulkMenu.appendChild(b);
+  });
+  document.getElementById('selectAllBtn').addEventListener('click', e => {
+    e.stopPropagation();
+    bulkMenu.hidden = !bulkMenu.hidden;
+  });
+  document.addEventListener('click', e => {
+    if (!document.getElementById('bulkDropdown').contains(e.target)) closeBulkMenu();
+  });
 
   // 彈窗
   const openBtn = document.getElementById('openAddBtn');
